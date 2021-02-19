@@ -41,13 +41,13 @@ describe("Stock fetch", () => {
       callback(null, rawData);
       done();
     });
-    // 1. Do SPY
+    // Arrange: 1. Do SPY
     const processTickerSpy = jest.spyOn(stockfetch, "processTickers");
 
-    // 2. Do Call, to trigger the mocks.
+    // Act: 2. Do Call, to trigger the mocks.
     stockfetch.readTickersFile("tickers.txt");
 
-    // 3. Check if mock is called
+    // Assert: 3. Check if mock is called
     expect(processTickerSpy).toHaveBeenCalledWith(parsedData);
   });
 });
