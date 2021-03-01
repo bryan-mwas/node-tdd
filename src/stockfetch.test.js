@@ -1,4 +1,4 @@
-const Stockfetch = require("./Stockfetch");
+const Stockfetch = require("./stockfetch");
 
 const fs = require("fs");
 
@@ -18,20 +18,25 @@ describe("Stock fetch", () => {
   });
 
   it("read should invoke error handler for invalid file", (done) => {
-    // ACT
+    // Arrange
+    jest.spyOn(fs, "readFile").mockImplementation((fileName, callback) => {
+      callback(new Error("failed"));
+    });
+
+    // Act //Assert
     const onError = (err) => {
       expect(err).toBe("Error reading file: invalid file");
       done();
     };
-
     stockfetch.readTickersFile("invalid file", onError);
   });
 
   it("read should invoke processTickers for valid file", (done) => {
+    // 1. Arrange: Setup variable, mocks, stubs, spies
+    // Stub the parseTickers method to return parsedData
     const rawData = "GOOG\nAAPL\nORCL\nMSFT";
     const parsedData = ["GOOG", "APPL", "ORCL", "MSFT"];
 
-    // Stub the parseTickers method to return parsedData
     const spy = jest
       .spyOn(stockfetch, "parseTickers")
       .mockReturnValue(parsedData);
@@ -39,15 +44,19 @@ describe("Stock fetch", () => {
     // Mock readFile function to invoke success callback with predefined data
     jest.spyOn(fs, "readFile").mockImplementation((fileName, callback) => {
       callback(null, rawData);
-      done();
     });
-    // Arrange: 1. Do SPY
-    const processTickerSpy = jest.spyOn(stockfetch, "processTickers");
 
-    // Act: 2. Do Call, to trigger the mocks.
+    const processTickerSpy = jest
+      .spyOn(stockfetch, "processTickers")
+      .mockImplementation((data) => {
+        console.log("Called with: ", data);
+        done();
+      });
+
+    // 2. Act: Do Call, to trigger the mocks.
     stockfetch.readTickersFile("tickers.txt");
 
-    // Assert: 3. Check if mock is called
+    // 3. Assert: Check if mock is called
     expect(processTickerSpy).toHaveBeenCalledWith(parsedData);
   });
 });
